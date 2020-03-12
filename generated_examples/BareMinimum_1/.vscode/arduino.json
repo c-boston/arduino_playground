@@ -1,0 +1,6 @@
+{
+    "sketch": "BareMinimum.ino",
+    "port": "COM4",
+    "board": "arduino:avr:nano",
+    "configuration": "cpu=atmega328old"
+}
