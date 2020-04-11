@@ -16,6 +16,7 @@ int startBound = 0;
 long endBoundX = 30000;
 long endBoundY = 22000;
 long targetY = 0;
+long realY = 0;
 int currentY = 0;
 long targetX = 0;
 int currentX = 0;
@@ -180,9 +181,13 @@ void readEncoderAndGetNewTargetY()
 
     int steps = posDiff * stepsPerEncoderPosChange;
 
-    targetY = targetY + steps;
-    targetY = max(targetY, startBound);
-    targetY = min(targetY, endBoundY);
+    realY = realY + steps;
+    if (realY > endBoundY)
+      targetY = endBoundY;
+    else if (realY < startBound)
+      targetY = startBound;
+    else
+      targetY = realY;
   }
 }
 
