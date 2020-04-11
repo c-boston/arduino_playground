@@ -33,8 +33,6 @@ char sensorMessage;
 int beginningStepsConstant = 16800;
 int sensorSpacingConstant = 1108;
 
-// TODO: for Y, track overall position even once past endBoundY
-
 void loop()
 {
   loopCount++;
