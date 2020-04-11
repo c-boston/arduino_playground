@@ -4,7 +4,7 @@ Encoder encoder(11, 12);
 
 void setup()
 {
-  Serial.begin(38400);
+  Serial.begin(19200);
 
   pinMode(2, OUTPUT);
   pinMode(5, OUTPUT);
@@ -13,7 +13,8 @@ void setup()
 }
 
 int startBound = 0;
-long endBound = 22000;
+long endBoundX = 30000;
+long endBoundY = 22000;
 long targetY = 0;
 int currentY = 0;
 long targetX = 0;
@@ -28,8 +29,10 @@ int currentSpeedY = baseSpeed;
 int currentSpeedX = baseSpeed;
 
 char sensorMessage;
-int beginningStepsConstant = 5000;
-int sensorSpacingConstant = 1000;
+int beginningStepsConstant = 16800;
+int sensorSpacingConstant = 1108;
+
+// TODO: for Y, track overall position even once past endBoundY
 
 void loop()
 {
@@ -49,25 +52,44 @@ void loop()
   }
 }
 
-int checkSerialReadAndGetTargetX()
+String incoming = "";
+String inString = "";
+bool shouldReturn = false;
+void checkSerialReadAndGetTargetX()
 {
-  if (Serial.available() > 0)
+  while (Serial.available() > 0)
   {
-    char incoming = Serial.read();
-    if (incoming == 'r')
+    Serial.println("reading...");
+    int inChar = Serial.read();
+
+    if (inChar != '\n')
     {
-      targetX = startBound;
+      inString += (char)inChar;
     }
     else
     {
-      int sensor = incoming - '0';
-      targetX = beginningStepsConstant + sensor * sensorSpacingConstant;
-      targetX = max(targetX, startBound);
-      targetX = min(targetX, endBound);
+      Serial.print("String:");
+      Serial.println(inString);
+
+      if (inString == "r")
+      {
+        targetX = startBound;
+      }
+      else
+      {
+        int sensor = inString.toInt();
+        Serial.print("Sensor:");
+        Serial.println(sensor);
+        targetX = beginningStepsConstant + sensor * sensorSpacingConstant;
+        targetX = max(targetX, startBound);
+        targetX = min(targetX, endBoundX);
+      }
+      Serial.println(targetX);
+
+      // clear the string for new input:
+      inString = "";
     }
   }
-
-  return targetX;
 }
 
 void processXMove()
@@ -113,12 +135,12 @@ void processYMove()
     int direction = HIGH;
     if (currentY < targetY)
     {
-      direction = HIGH;
+      direction = LOW;
       currentY++;
     }
     else
     {
-      direction = LOW;
+      direction = HIGH;
       currentY--;
     }
 
@@ -147,7 +169,7 @@ long newPosition = 0;
 long posDiff = 0;
 float stepsPerEncoderPosChange = 7;
 
-int readEncoderAndGetNewTargetY()
+void readEncoderAndGetNewTargetY()
 {
   newPosition = encoder.read();
 
@@ -160,10 +182,8 @@ int readEncoderAndGetNewTargetY()
 
     targetY = targetY + steps;
     targetY = max(targetY, startBound);
-    targetY = min(targetY, endBound);
+    targetY = min(targetY, endBoundY);
   }
-
-  return targetY;
 }
 
 void stepX(int direction, int speed)

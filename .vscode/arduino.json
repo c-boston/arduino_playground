@@ -2,6 +2,6 @@
     "programmer": "Arduino as ISP",
     "board": "arduino:avr:nano",
     "configuration": "cpu=atmega328old",
-    "port": "COM4",
-    "sketch": "main.ino"
+    "port": "COM3",
+    "sketch": "main\\main.ino"
 }
