@@ -4,7 +4,7 @@ Encoder encoder(11, 12);
 
 void setup()
 {
-  Serial.begin(19200);
+  Serial.begin(9600);
 
   pinMode(2, OUTPUT);
   pinMode(5, OUTPUT);
@@ -58,7 +58,6 @@ void checkSerialReadAndGetTargetX()
 {
   while (Serial.available() > 0)
   {
-    Serial.println("reading...");
     int inChar = Serial.read();
 
     if (inChar != '\n')
@@ -67,7 +66,8 @@ void checkSerialReadAndGetTargetX()
     }
     else
     {
-      Serial.print("String:");
+      Serial.println("-----");
+      Serial.print("String received: ");
       Serial.println(inString);
 
       if (inString == "r")
@@ -77,13 +77,15 @@ void checkSerialReadAndGetTargetX()
       else
       {
         int sensor = inString.toInt();
-        Serial.print("Sensor:");
+        Serial.print("Sensor: ");
         Serial.println(sensor);
         targetX = beginningStepsConstant + sensor * sensorSpacingConstant;
         targetX = max(targetX, startBound);
         targetX = min(targetX, endBoundX);
       }
+      Serial.print("Target X: ");
       Serial.println(targetX);
+      Serial.println("-----");
 
       // clear the string for new input:
       inString = "";
