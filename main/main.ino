@@ -2,6 +2,9 @@
 
 Encoder encoder(11, 12);
 
+const int repairToolTrigger = 9;
+const int repairToolMonitor = 10;
+
 void setup()
 {
   Serial.begin(9600);
@@ -10,7 +13,14 @@ void setup()
   pinMode(5, OUTPUT);
   pinMode(3, OUTPUT);
   pinMode(6, OUTPUT);
+
+  pinMode(repairToolTrigger, OUTPUT);
+  pinMode(repairToolMonitor, INPUT);
 }
+
+int repairToolState = HIGH;
+int repairToolLastState = HIGH;
+bool repairInProgress = false;
 
 int startBound = 0;
 long endBoundX = 30000;
@@ -37,7 +47,26 @@ void loop()
 {
   loopCount++;
 
-  checkSerialReadAndGetTargetX();
+  if (currentX == targetX)
+  {
+    if (repairInProgress == false)
+    {
+      if (currentX != startBound)
+      {
+        digitalWrite(repairToolTrigger, HIGH);
+        repairInProgress = true;
+      }
+      else
+      {
+        checkSerialReadAndGetTargetX();
+      }
+    }
+    else
+    {
+      checkRepairState();
+    }
+  }
+
   processXMove();
 
   // only read Encoder once X has left the startBound
@@ -49,6 +78,27 @@ void loop()
     // if (currentX == targetX)
     processYMove();
   }
+}
+
+void checkRepairState()
+{
+  int repairToolState = digitalRead(repairToolMonitor);
+  if (repairToolState != repairToolLastState)
+  {
+    if (repairToolState == LOW)
+    {
+      Serial.println('Repairing...');
+    }
+    else
+    {
+      Serial.println('Repair done');
+      repairInProgress = false;
+    }
+    // Delay a little bit to avoid bouncing
+    delay(50);
+  }
+
+  repairToolLastState = repairToolState;
 }
 
 String incoming = "";
