@@ -49,25 +49,30 @@ void loop()
 
   if (currentX == targetX)
   {
-    if (repairInProgress == false)
+    if (repairInProgress == true)
     {
-      if (currentX != startBound)
+      checkRepairState();
+      // if no longer in progress now then it finished and send X back home
+      if (repairInProgress == false)
+        targetX = startBound;
+    }
+    else
+    {
+      if (currentX == startBound)
+      {
+        checkSerialReadAndGetTargetX();
+      }
+      else
       {
         digitalWrite(repairToolTrigger, HIGH);
         repairInProgress = true;
       }
-      else
-      {
-        checkSerialReadAndGetTargetX();
-      }
-    }
-    else
-    {
-      checkRepairState();
     }
   }
-
-  processXMove();
+  else
+  {
+    processXMove();
+  }
 
   // only read Encoder once X has left the startBound
   if (currentX != startBound)
