@@ -1,3 +1,8 @@
+/** 
+ * This will trigger the repair tool every 5 seconds. Including a 5 second delay on first startup.
+ * Look for serial monitor messages as it starts, in progress, and finishes.
+ * **/
+
 const int repairToolTrigger = 9;
 const int repairToolMonitor = 10;
 
