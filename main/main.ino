@@ -54,7 +54,10 @@ void loop()
       checkRepairState();
       // if no longer in progress now then it finished and send X back home
       if (repairInProgress == false)
+      {
         targetX = startBound;
+        triggerRepair(false);
+      }
     }
     else
     {
@@ -64,8 +67,9 @@ void loop()
       }
       else
       {
-        digitalWrite(repairToolTrigger, HIGH);
+        triggerRepair(true);
         repairInProgress = true;
+        Serial.println('Repair start');
       }
     }
   }
@@ -82,6 +86,18 @@ void loop()
     // wait for X to finish move before letting Y move
     // if (currentX == targetX)
     processYMove();
+  }
+}
+
+void triggerRepair(bool turnOn)
+{
+  if (turnOn == true)
+  {
+    digitalWrite(repairToolTrigger, HIGH);
+  }
+  else
+  {
+    digitalWrite(repairToolTrigger, LOW);
   }
 }
 
