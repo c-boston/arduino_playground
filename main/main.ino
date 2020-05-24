@@ -15,11 +15,11 @@ void setup()
   pinMode(6, OUTPUT);
 
   pinMode(repairToolTrigger, OUTPUT);
-  pinMode(repairToolMonitor, INPUT);
+  pinMode(repairToolMonitor, INPUT_PULLUP);
 }
 
-int repairToolState = HIGH;
-int repairToolLastState = HIGH;
+int repairToolState = LOW;
+int repairToolLastState = LOW;
 bool repairInProgress = false;
 
 int startBound = 0;
@@ -106,7 +106,7 @@ void checkRepairState()
   int repairToolState = digitalRead(repairToolMonitor);
   if (repairToolState != repairToolLastState)
   {
-    if (repairToolState == LOW)
+    if (repairToolState == HIGH)
     {
       Serial.println("Repairing...");
     }
