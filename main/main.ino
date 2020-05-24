@@ -69,7 +69,7 @@ void loop()
       {
         triggerRepair(true);
         repairInProgress = true;
-        Serial.println('Repair start');
+        Serial.println("Repair start");
       }
     }
   }
@@ -108,11 +108,11 @@ void checkRepairState()
   {
     if (repairToolState == LOW)
     {
-      Serial.println('Repairing...');
+      Serial.println("Repairing...");
     }
     else
     {
-      Serial.println('Repair done');
+      Serial.println("Repair done");
       repairInProgress = false;
     }
     // Delay a little bit to avoid bouncing
