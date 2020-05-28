@@ -33,7 +33,7 @@ void loop() {
   readIndex = readIndex + 1;
   // if we're at the end of the array...
   if (readIndex >= numReadings) {
-    // ...wrap around to the beginning:
+    // ...wrap around to the beginn
     readIndex = 0;
   }
 
