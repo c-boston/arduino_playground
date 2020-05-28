@@ -5,10 +5,6 @@ Encoder encoder(11, 12);
 const int repairToolTrigger = 9;
 const int repairToolMonitor = 10;
 
-// TODO
-// 1. Y must go 5000 before repair triggerRepair
-// 2. when "going home" stop reading encoder
-
 void setup()
 {
   Serial.begin(9600);
@@ -37,6 +33,7 @@ long realY = startDelayConstant;
 int currentY = 0;
 long targetX = 0;
 int currentX = 0;
+bool isOnTheWayBackToStart = false;
 
 int loopCount = 0;
 int startDeccelAt = 2000;
@@ -60,18 +57,24 @@ void loop()
     if (repairInProgress == true)
     {
       checkRepairState();
-      // if no longer in progress now then it finished and send X & Y back home
+      // if no longer in progress now then it finished and send X & Y back to start
       if (repairInProgress == false)
       {
+        // HACK - flush serial receiver once repair is done
+        while (Serial.available())
+          Serial.read();
+
         targetX = startBound;
         targetY = startBound;
         realY = startDelayConstant;
+        isOnTheWayBackToStart = true;
         triggerRepair(false);
       }
     }
     else
     {
       // repair not in progress
+
       if (currentX == startBound)
       {
         // X is sitting at start so its ready to read from sensors
@@ -79,10 +82,13 @@ void loop()
       }
       else
       {
-        // currentX has reached target so trigger repair
-        triggerRepair(true);
-        repairInProgress = true;
-        Serial.println("Repair start");
+        // currentX has reached target but also wait for Y to have gone far enough
+        if (currentY == targetY && realY > -1)
+        {
+          triggerRepair(true);
+          repairInProgress = true;
+          Serial.println("Repair start");
+        }
       }
     }
   }
@@ -92,8 +98,13 @@ void loop()
     processYMove();
   }
 
-  // only read Encoder once X has left the startBound
-  if (currentX != startBound)
+  if (currentX == startBound && currentY == startBound)
+  {
+    isOnTheWayBackToStart = false;
+  }
+
+  // only read Encoder once X has left the startBound and its not on the way back to start
+  if (currentX != startBound && repairInProgress == false && isOnTheWayBackToStart == false)
   {
     readEncoderAndGetNewTargetY();
   }
@@ -124,10 +135,6 @@ void checkRepairState()
     {
       Serial.println("Repair done");
       repairInProgress = false;
-
-      // HACK - flush serial receiver once repair is done
-      while (Serial.available())
-        Serial.read();
     }
     // Delay a little bit to avoid bouncing
     delay(50);
