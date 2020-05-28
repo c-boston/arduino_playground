@@ -5,6 +5,10 @@ Encoder encoder(11, 12);
 const int repairToolTrigger = 9;
 const int repairToolMonitor = 10;
 
+// TODO
+// 1. Y must go 5000 before repair triggerRepair
+// 2. when "going home" stop reading encoder
+
 void setup()
 {
   Serial.begin(9600);
@@ -16,6 +20,8 @@ void setup()
 
   pinMode(repairToolTrigger, OUTPUT);
   pinMode(repairToolMonitor, INPUT_PULLUP);
+
+  digitalWrite(repairToolTrigger, LOW);
 }
 
 int repairToolState = LOW;
@@ -26,7 +32,8 @@ int startBound = 0;
 long endBoundX = 30000;
 long endBoundY = 22000;
 long targetY = 0;
-long realY = 0;
+long startDelayConstant = -5000;
+long realY = startDelayConstant;
 int currentY = 0;
 long targetX = 0;
 int currentX = 0;
@@ -40,33 +47,39 @@ int currentSpeedY = baseSpeed;
 int currentSpeedX = baseSpeed;
 
 char sensorMessage;
-int beginningStepsConstant = 16800;
+int beginningStepsConstant = 12200;
 int sensorSpacingConstant = 1108;
 
 void loop()
 {
   loopCount++;
 
+  // either have reached target or sitting at start
   if (currentX == targetX)
   {
     if (repairInProgress == true)
     {
       checkRepairState();
-      // if no longer in progress now then it finished and send X back home
+      // if no longer in progress now then it finished and send X & Y back home
       if (repairInProgress == false)
       {
         targetX = startBound;
+        targetY = startBound;
+        realY = startDelayConstant;
         triggerRepair(false);
       }
     }
     else
     {
+      // repair not in progress
       if (currentX == startBound)
       {
+        // X is sitting at start so its ready to read from sensors
         checkSerialReadAndGetTargetX();
       }
       else
       {
+        // currentX has reached target so trigger repair
         triggerRepair(true);
         repairInProgress = true;
         Serial.println("Repair start");
@@ -76,16 +89,13 @@ void loop()
   else
   {
     processXMove();
+    processYMove();
   }
 
   // only read Encoder once X has left the startBound
   if (currentX != startBound)
   {
     readEncoderAndGetNewTargetY();
-
-    // wait for X to finish move before letting Y move
-    // if (currentX == targetX)
-    processYMove();
   }
 }
 
@@ -114,6 +124,10 @@ void checkRepairState()
     {
       Serial.println("Repair done");
       repairInProgress = false;
+
+      // HACK - flush serial receiver once repair is done
+      while (Serial.available())
+        Serial.read();
     }
     // Delay a little bit to avoid bouncing
     delay(50);
