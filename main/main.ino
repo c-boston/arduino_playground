@@ -95,7 +95,6 @@ void loop()
   else
   {
     processXMove();
-    processYMove();
   }
 
   if (currentX == startBound && currentY == startBound)
@@ -104,9 +103,12 @@ void loop()
   }
 
   // only read Encoder once X has left the startBound and its not on the way back to start
-  if (currentX != startBound && repairInProgress == false && isOnTheWayBackToStart == false)
+  if (currentX != startBound && repairInProgress == false)
   {
-    readEncoderAndGetNewTargetY();
+    if (isOnTheWayBackToStart == false)
+      readEncoderAndGetNewTargetY();
+
+    processYMove();
   }
 }
 
